@@ -7,7 +7,7 @@ app: complete-tutorial-test
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
-# frameworkVersion: "=X.X.X"
+# frameworkVersion: "=1.0.0"
 
 provider:
   name: aws
@@ -33,6 +33,14 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
+  readS3:
+      handler: ./ExampleHandlers/readFileS3.readS3
+      iamRoleStatementsInherit: true
+      role: s3Role
+      events:
+        - http:
+            path: tutorial/readS3
+            method: get
   hello:
     handler: handler.hello
     iamRoleStatementsInherit: true
@@ -116,8 +124,9 @@ resources:
               Statement:
               - Effect: 'Allow'
                 Action:
-                  - 's3:*'                                #Khai báo tất cả các action trên s3
-                Resource: arn:aws:s3:::test-dyna          # arn của Bucket cần cấp quyền truy cập
+                  - s3:GetObject                               #Khai báo tất cả các action trên s3
+                  - s3:List*
+                Resource: arn:aws:s3:::test-dyna/*          # arn của Bucket cần cấp quyền truy cập
 
 #  Outputs:
 #     NewOutput:
