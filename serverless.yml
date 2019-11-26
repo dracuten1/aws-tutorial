@@ -1,8 +1,8 @@
 
 
-service: complete-tutorial
+service: complete-tutorial-test
 # app and org for use with dashboard.serverless.com
-app: complete-tutorial
+app: complete-tutorial-test
 #org: your-org-name
 
 # You can pin your service to only deploy with a specific Serverless version
@@ -35,6 +35,8 @@ provider:
 functions:
   hello:
     handler: handler.hello
+    iamRoleStatementsInherit: true
+    #role: s3Role
     role: queryTestDRLRole
     events:
       - http:
@@ -64,7 +66,7 @@ resources:
     S3Resource:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: complete-tutorial-bucket
+        BucketName: complete-tutorial
     queryTestDRLRole:
       Type: AWS::IAM::Role            # Loại resouce, có thể là S3 Bucket, dynamodb Table,...
       Properties:
@@ -79,11 +81,11 @@ resources:
                   - lambda.amazonaws.com  # loại service được sử dụng role :lambda function
               Action: sts:AssumeRole
         Policies:                     # Các quyền access
-          - PolicyName: myPolicy1  # Tên policy
+          - PolicyName: myPolicy  # Tên policy
             PolicyDocument:
               Version: '2012-10-17'
               Statement:
-                - Effect: Allow                            #Cho phép quyền truy cập
+              - Effect: Allow                            #Cho phép quyền truy cập
                 Action:                                  #Khai báo các action được thực hiện
                   - dynamodb:Query                       #Cho phép query
                   - dynamodb:Scan                        #Cho phép scan
@@ -91,7 +93,27 @@ resources:
                   - dynamodb:PutItem
                   - dynamodb:UpdateItem
                   - dynamodb:DeleteItem
-                Resource: "arn:aws:dynamodb:ap-southeast-1:531817921593:table/test_drl" # arn của table cần cấp quyền truy cập
+                Resource: 
+                  - arn:aws:dynamodb:ap-southeast-1:531817921593:table/test_drl # arn của table cần cấp quyền truy cập
+                  - arn:aws:dynamodb:ap-southeast-1:531817921593:table/test_drl/index/GSI1
+    s3Role:
+      Type: AWS::IAM::Role            # Loại resouce, có thể là S3 Bucket, dynamodb Table,...
+      Properties:
+        Path: /my/role/table/         # vị trí lưu của role
+        RoleName: S3Role
+        AssumeRolePolicyDocument:     # Khai báo thông tin loại service được sử dụng role :lambda /EC2/ Redshift,...
+          Version: '2012-10-17'       # Khai báo version polici của document sử dụng, sử dụng mới nhất
+          Statement:
+            - Effect: Allow           # Cho phép service có thể sử dụng role
+              Principal:
+                Service:
+                  - lambda.amazonaws.com  # loại service được sử dụng role :lambda function
+              Action: sts:AssumeRole
+        Policies:                     # Các quyền access
+          - PolicyName: myPolicy     # Tên policy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
               - Effect: 'Allow'
                 Action:
                   - 's3:*'                                #Khai báo tất cả các action trên s3

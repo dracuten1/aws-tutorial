@@ -1,18 +1,30 @@
 'use strict';
+const AWS = require("aws-sdk");
 
+AWS.config.update({
+  region: "ap-southeast-1",
+});
+const docClient = new AWS.DynamoDB.DocumentClient()
 module.exports.hello = async event => {
+  const userID='User#01';
+    var params = {
+        TableName: 'test_drl',
+        KeyConditionExpression: 'SK = :hkey',
+        ExpressionAttributeValues: {
+            ':hkey': `HK1-2016-2017`,
+        },
+        Select: 'COUNT',
+        IndexName:'GSI1'
+    };
+  const data = await docClient.query(params).promise();
   return {
     statusCode: 200,
     body: JSON.stringify(
       {
-        message: 'Welcome to my aws tutorial',
-        input: event,
+        data
       },
       null,
       2
     ),
   };
-
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
 };
